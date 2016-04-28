@@ -1,0 +1,7 @@
+name = ResearchPipe ODP Migration
+description = Migrate Oceanographic Data Portal (ODP) data to ResearchPipe.
+core = 7.x
+version = 7.x-dev
+package = ResearchPipe
+
+dependencies[] = migrate
