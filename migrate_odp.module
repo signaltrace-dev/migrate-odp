@@ -1,1 +1,284 @@
 <?php
+
+function migrate_odp_node_view(){
+  $params = drupal_get_query_parameters();
+  if(!empty($params['migrate']) && $params['migrate'] == 'true'){
+    $execute = !empty($params['execute']) ? $params['execute'] == 'true' : FALSE;
+    migrate_odp_fix_workflows($execute);
+  }
+}
+
+function migrate_odp_get_workflows($source_db = NULL){
+  if(!empty($source_db)){
+    db_set_active('odp');
+  }
+
+  $workflows = array();
+  $query = db_select('workflows', 'w');
+  $query->fields('w', array('wid', 'name', 'label'));
+
+  $results = $query->execute();
+  while($row = $results->fetchAssoc()){
+    if(!empty($row['wid'])){
+      $state_query = db_select('workflow_states', 's');
+      $state_query->fields('s', array('sid', 'name', 'state'));
+      $state_query->condition('s.wid', $row['wid'], '=');
+      $state_results = $state_query->execute();
+      $states = array();
+      while($srow = $state_results->fetchAssoc()){
+        if(!empty($srow['sid'])){
+          $states[$srow['sid']] = array(
+            'name' => $srow['name'],
+            'state' => $srow['state'],
+          );
+        }
+      }
+
+      $workflows[$row['wid']] = array(
+        'name' => $row['name'],
+        'desc' => $row['label'],
+        'states' => $states,
+      );
+    }
+  }
+
+  db_set_active();
+
+  ksort($workflows);
+  return $workflows;
+}
+
+function migrate_odp_get_state_mappings($old_workflows, $new_workflows){
+  $all_old_states = array();
+  foreach($old_workflows as $wf){
+    $wf_name = $wf['name'];
+    $all_old_states[$wf_name] = array();
+
+    foreach($wf['states'] as $sid => $state){
+      $all_old_states[$wf_name][$sid] = $state;
+    }
+  }
+
+  $all_new_states = array();
+  foreach($new_workflows as $wf){
+    $wf_name = $wf['name'];
+    $all_new_states[$wf_name] = array();
+
+    foreach($wf['states'] as $sid => $state){
+      $all_new_states[$wf_name][$sid] = $state;
+    }
+  }
+
+  $state_mappings = array();
+
+  foreach($all_old_states as $wf_name => $old_states){
+    if(!empty($all_new_states[$wf_name])){
+      $new_states = $all_new_states[$wf_name];
+
+      foreach($old_states as $old_key => $old_state){
+        foreach($new_states as $new_key => $new_state){
+          if($old_state['name'] == $new_state['name']){
+            $state_mappings[$old_key] = $new_key;
+          }
+        }
+      }
+    }
+
+  }
+  ksort($state_mappings);
+
+  return $state_mappings;
+}
+function migrate_odp_get_states($workflows){
+  $all_states = array();
+  foreach($workflows as $wf){
+    foreach($wf['states'] as $sid => $state){
+      $all_states[$sid] = $state;
+    }
+  }
+
+  ksort($all_states);
+  return $all_states;
+}
+
+function migrate_odp_update_workflow_fields($state_mappings, $execute = FALSE){
+  $fields = array(
+    'field_data_field_identify_state',
+    'field_data_field_metadata_state',
+    'field_data_field_data_state',
+    'field_data_field_repository_state',
+    'field_data_field_availability_state',
+  );
+
+  foreach($state_mappings as $old_sid => $new_sid){
+    foreach($fields as $f){
+      if($f != 'field_data_field_data_state'){
+        $column = str_replace('field_data_', '', $f) . '_value';
+      }
+      else{
+        $column = 'field_data_state_value';
+      }
+
+      if($execute){
+        $update = db_update($f)
+        ->fields(array(
+          $column => $new_sid,
+        ))
+        ->condition($column, $old_sid, '=');
+        $result = $update->execute();
+      }
+    }
+  }
+}
+
+function migrate_odp_get_node_mappings(){
+  $nodes = array();
+  $query = db_select('migrate_map_ecogignodedataset', 'n');
+  $query->fields('n', array('sourceid1', 'destid1'));
+
+  $results = $query->execute();
+  while($row = $results->fetchAssoc()){
+    if(!empty($row['sourceid1'])){
+      $nodes[$row['sourceid1']] = $row['destid1'];
+    }
+  }
+
+  return $nodes;
+}
+
+function migrate_odp_migrate_history($state_mappings, $node_mappings, $legacy_workflows, $execute = FALSE){
+  // Delete current history
+  if($execute){
+    db_delete('workflow_node_history')->execute();
+    db_delete('migrate_workflow_legacy_history')->execute();
+  }
+
+  // Get history from source DB
+  $history = migrate_odp_get_legacy_history();
+
+  foreach($history as $key => $entry){
+    $is_legacy = FALSE;
+
+    $old_sid = $entry['old_sid'];
+    $sid = $entry['sid'];
+
+    // Update node value
+    $nid = $entry['nid'];
+    $updated_nid = !empty($node_mappings[$nid]) ? $node_mappings[$nid] : $nid;
+    $entry['nid'] = $updated_nid;
+
+    // If "legacy" state, insert into legacy table
+    foreach($legacy_workflows as $wf_key => $wf){
+      foreach($wf['states'] as $legacy_sid => $legacy_state){
+        if($old_sid == $legacy_sid || $sid == $legacy_sid){
+          $is_legacy = TRUE;
+          $wf_name = !empty($wf['name']) ? $wf['name'] : 'legacy_workflow';
+          $wf_desc = !empty($wf['desc']) ? $wf['desc'] : t('Old Workflow');
+
+          $old_state_name = !empty($wf['states'][$old_sid]['name']) ? $wf['states'][$old_sid]['name'] : t('old_state');
+          $old_state_desc = !empty($wf['states'][$old_sid]['state']) ? $wf['states'][$old_sid]['state'] : t('Old State');
+
+          $state_name = !empty($wf['states'][$sid]['name']) ? $wf['states'][$sid]['name'] : 'legacy_state';
+          $state_desc = !empty($wf['states'][$sid]['state']) ? $wf['states'][$sid]['state'] : t('Old State');
+
+          $legacy_entry = array(
+            'nid' => $entry['nid'],
+            'wid' => $wf_key,
+            'old_workflow' => $wf_desc,
+            'old_sid' => $old_sid,
+            'sid' => $sid,
+            'old_state' => $old_state_desc,
+            'state' => $state_desc,
+            'uid' => $entry['uid'],
+            'stamp' => $entry['stamp'],
+            'comment' => $entry['comment'],
+          );
+        }
+      }
+    }
+    if($is_legacy){
+      migrate_odp_create_legacy_history_entry($legacy_entry);
+    }
+    else{
+      // Else update SID values and insert into history
+      $updated_old_sid = !empty($state_mappings[$old_sid]) ? $state_mappings[$old_sid] : $old_sid;
+      $updated_sid = !empty($state_mappings[$sid]) ? $state_mappings[$sid] : $sid;
+      $entry['old_sid'] = $updated_old_sid;
+      $entry['sid'] = $updated_sid;
+      if($execute){
+        migrate_odp_create_history_entry($entry);
+      }
+    }
+  }
+}
+
+function migrate_odp_get_legacy_history(){
+  db_set_active('odp');
+  $results = db_select('workflow_node_history', 'h')
+    ->fields('h')
+    ->execute();
+
+  $entries = array();
+  while($row = $results->fetchAssoc()){
+    $entries[] = $row;
+  }
+  db_set_active();
+
+  return $entries;
+}
+
+function migrate_odp_get_legacy_workflows($old_workflows, $new_workflows){
+  $legacy_workflows = array();
+  foreach($old_workflows as $key => $value){
+    $exists = FALSE;
+    $wf_name = $value['name'];
+    foreach($new_workflows as $new_key => $new_value){
+      $new_wf_name = $new_value['name'];
+      if($new_wf_name == $wf_name){
+        $exists = TRUE;
+      }
+    }
+
+    if(!$exists){
+      $legacy_workflows[$key] = $value;
+    }
+  }
+
+  return $legacy_workflows;
+}
+
+function migrate_odp_fix_workflows($execute = FALSE){
+  $old_workflows = migrate_odp_get_workflows('odp');
+  $new_workflows = migrate_odp_get_workflows();
+  $state_mappings = migrate_odp_get_state_mappings($old_workflows, $new_workflows);
+  $all_old_states = migrate_odp_get_states($old_workflows);
+  $all_new_states = migrate_odp_get_states($new_workflows);
+  $legacy_workflows = migrate_odp_get_legacy_workflows($old_workflows, $new_workflows);
+  $node_mappings = migrate_odp_get_node_mappings();
+
+  // Go through fields and update current state values to new state values
+  migrate_odp_update_workflow_fields($state_mappings, $execute);
+
+  // Update Workflow history to match new states and NIDs
+  migrate_odp_migrate_history($state_mappings, $node_mappings, $legacy_workflows, $execute);
+
+  variable_set('comment_maintain_node_statistics', TRUE);
+  devel_rebuild_node_comment_statistics();
+
+  cache_clear_all();
+  if($execute){
+    drupal_set_message('Updated workflow node references and workflow node history.');
+  }
+}
+
+function migrate_odp_create_history_entry($entry){
+  db_insert('workflow_node_history')
+  ->fields($entry)
+  ->execute();
+}
+
+function migrate_odp_create_legacy_history_entry($entry){
+  db_insert('migrate_workflow_legacy_history')
+  ->fields($entry)
+  ->execute();
+}

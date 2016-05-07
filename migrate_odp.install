@@ -1,0 +1,144 @@
+<?php
+
+function migrate_odp_schema(){
+  $schema['migrate_workflow_legacy_history'] = array(
+    'description' => 'Contains any old workflow history entries from previous systems that do not directly match existing workflows.',
+    'fields' => array(
+      'ID' => array(
+        'description' => 'Unique ID for entry.',
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'nid' => array(
+        'description' => 'The node associated with this entry.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'wid' => array(
+        'description' => 'The original workflow ID.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'old_workflow' => array(
+        'description' => 'Descriptive name of the original workflow.',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'old_sid' => array(
+        'description' => 'The original workflow state ID.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'sid' => array(
+        'description' => 'The updated workflow state ID.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'old_state' => array(
+        'description' => 'Descriptive name of the original workflow state.',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'state' => array(
+        'description' => 'Descriptive name of the updated workflow state.',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => 'UID of the user that executed the state change.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'stamp' => array(
+        'description' => 'UNIX timestamp when the transition was executed.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'comment' => array(
+        'description' => 'Any additional comments made by the user.',
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('ID'),
+  );
+  return $schema;
+}
+
+
+/**
+* Add migrate_workflow_legacy_history table to hold workflow history for legacy systems
+*/
+function migrate_odp_update_7201(){
+  $schema['migrate_workflow_legacy_history'] = array(
+    'description' => 'Contains any old workflow history entries from previous systems that do not directly match existing workflows.',
+    'fields' => array(
+      'ID' => array(
+        'description' => 'Unique ID for entry.',
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'nid' => array(
+        'description' => 'The node associated with this entry.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'wid' => array(
+        'description' => 'The original workflow ID.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'old_workflow' => array(
+        'description' => 'Descriptive name of the original workflow.',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'old_sid' => array(
+        'description' => 'The original workflow state ID.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'sid' => array(
+        'description' => 'The updated workflow state ID.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'old_state' => array(
+        'description' => 'Descriptive name of the original workflow state.',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'state' => array(
+        'description' => 'Descriptive name of the updated workflow state.',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => 'UID of the user that executed the state change.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'stamp' => array(
+        'description' => 'UNIX timestamp when the transition was executed.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'comment' => array(
+        'description' => 'Any additional comments made by the user.',
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('ID'),
+  );
+
+  db_create_table('migrate_workflow_legacy_history', $schema['migrate_workflow_legacy_history']);
+}
