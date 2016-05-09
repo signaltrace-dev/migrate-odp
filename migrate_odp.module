@@ -219,7 +219,22 @@ function migrate_odp_get_node_mappings(){
   return $nodes;
 }
 
-function migrate_odp_migrate_history($state_mappings, $node_mappings, $legacy_workflows, $execute = FALSE){
+function migrate_odp_get_user_mappings(){
+  $users = array();
+  $query = db_select('migrate_map_ecogiguser', 'u');
+  $query->fields('u', array('sourceid1', 'destid1'));
+
+  $results = $query->execute();
+  while($row = $results->fetchAssoc()){
+    if(!empty($row['sourceid1'])){
+      $users[$row['sourceid1']] = $row['destid1'];
+    }
+  }
+
+  return $users;
+}
+
+function migrate_odp_migrate_history($state_mappings, $node_mappings, $user_mappings, $legacy_workflows, $execute = FALSE){
   // Delete current history
   if($execute){
     db_delete('workflow_node_history')->execute();
@@ -228,7 +243,6 @@ function migrate_odp_migrate_history($state_mappings, $node_mappings, $legacy_wo
 
   // Get history from source DB
   $history = migrate_odp_get_legacy_history();
-
   foreach($history as $key => $entry){
     $is_legacy = FALSE;
 
@@ -239,6 +253,11 @@ function migrate_odp_migrate_history($state_mappings, $node_mappings, $legacy_wo
     $nid = $entry['nid'];
     $updated_nid = !empty($node_mappings[$nid]) ? $node_mappings[$nid] : $nid;
     $entry['nid'] = $updated_nid;
+
+    // Update user value
+    $uid = $entry['uid'];
+    $updated_uid = !empty($user_mappings[$uid]) ? $user_mappings[$uid] : $uid;
+    $entry['uid'] = $updated_uid;
 
     // If "legacy" state, insert into legacy table
     foreach($legacy_workflows as $wf_key => $wf){
@@ -334,6 +353,8 @@ function migrate_odp_fix_workflows($execute = FALSE){
   $all_new_states = migrate_odp_get_states($new_workflows);
   $legacy_workflows = migrate_odp_get_legacy_workflows($old_workflows, $new_workflows);
   $node_mappings = migrate_odp_get_node_mappings();
+  $user_mappings = migrate_odp_get_user_mappings();
+
   // Insert state mappings for historical lookup table
   migrate_odp_insert_state_mappings($state_mappings, $all_old_states, $all_new_states);
 
@@ -341,7 +362,7 @@ function migrate_odp_fix_workflows($execute = FALSE){
   migrate_odp_update_workflow_fields($state_mappings, $execute);
 
   // Update Workflow history to match new states and NIDs
-  migrate_odp_migrate_history($state_mappings, $node_mappings, $legacy_workflows, $execute);
+  migrate_odp_migrate_history($state_mappings, $node_mappings, $user_mappings, $legacy_workflows, $execute);
 
   variable_set('comment_maintain_node_statistics', TRUE);
   devel_rebuild_node_comment_statistics();
