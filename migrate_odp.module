@@ -1,5 +1,41 @@
 <?php
 
+function migrate_odp_menu(){
+  $items = array();
+
+  $items['admin/migrate/workflows'] = array(
+    'title' => t('Migrate workflows data'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('migrate_odp_admin_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+function migrate_odp_admin_form($form, &$form_state){
+  $migrated = variable_get('migrate_workflow_status', FALSE);
+  if($migrated){
+    $form['lbl_migrated'] = array(
+      '#prefix' => '<div class="alert alert-info">',
+      '#suffix' => '</div>',
+      '#markup' => t('Migration already executed.'),
+    );
+  }
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Migrate',
+  );
+
+  return $form;
+}
+
+function migrate_odp_admin_form_submit($form, &$form_state){
+  migrate_odp_fix_workflows(TRUE);
+}
+
 function migrate_odp_node_view(){
   $params = drupal_get_query_parameters();
   if(!empty($params['migrate']) && $params['migrate'] == 'true'){
@@ -292,6 +328,7 @@ function migrate_odp_fix_workflows($execute = FALSE){
   cache_clear_all();
   if($execute){
     drupal_set_message('Updated workflow node references and workflow node history.');
+    variable_set('migrate_workflow_status', TRUE);
   }
 }
 
