@@ -190,6 +190,7 @@ function migrate_odp_migrate_history($state_mappings, $node_mappings, $legacy_wo
             'old_state' => $old_state_desc,
             'state' => $state_desc,
             'uid' => $entry['uid'],
+            'name' => $entry['name'],
             'stamp' => $entry['stamp'],
             'comment' => $entry['comment'],
           );
@@ -199,8 +200,10 @@ function migrate_odp_migrate_history($state_mappings, $node_mappings, $legacy_wo
     if($is_legacy){
       migrate_odp_create_legacy_history_entry($legacy_entry);
     }
+    // Else update SID values and insert into history
     else{
-      // Else update SID values and insert into history
+      // Unset column that is only needed for legacy history entries
+      unset($entry['name']);
       $updated_old_sid = !empty($state_mappings[$old_sid]) ? $state_mappings[$old_sid] : $old_sid;
       $updated_sid = !empty($state_mappings[$sid]) ? $state_mappings[$sid] : $sid;
       $entry['old_sid'] = $updated_old_sid;
@@ -214,9 +217,12 @@ function migrate_odp_migrate_history($state_mappings, $node_mappings, $legacy_wo
 
 function migrate_odp_get_legacy_history(){
   db_set_active('odp');
-  $results = db_select('workflow_node_history', 'h')
+  $query = db_select('workflow_node_history', 'h');
+  $query->join('users', 'u', 'h.uid = u.uid');
+  $query
     ->fields('h')
-    ->execute();
+    ->fields('u', array('name'));
+  $results = $query->execute();
 
   $entries = array();
   while($row = $results->fetchAssoc()){

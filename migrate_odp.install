@@ -52,6 +52,12 @@ function migrate_odp_schema(){
         'type' => 'int',
         'not null' => TRUE,
       ),
+      'name' => array(
+        'description' => 'User name of the user that executed the state change.',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
       'stamp' => array(
         'description' => 'UNIX timestamp when the transition was executed.',
         'type' => 'int',
@@ -123,6 +129,12 @@ function migrate_odp_update_7201(){
       'uid' => array(
         'description' => 'UID of the user that executed the state change.',
         'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'User name of the user that executed the state change.',
+        'type' => 'varchar',
+        'length' => '255',
         'not null' => TRUE,
       ),
       'stamp' => array(
