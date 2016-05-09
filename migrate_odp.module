@@ -101,6 +101,22 @@ function migrate_odp_get_states($workflows){
   return $all_states;
 }
 
+function migrate_odp_insert_state_mappings($state_mappings, $old_states, $new_states){
+  db_delete('migrate_workflow_state_mappings')->execute();
+  foreach($state_mappings as $old_sid => $new_sid){
+    $entry = array(
+      'old_sid' => $old_sid,
+      'sid' => $new_sid,
+      'old_name' => !empty($old_states[$old_sid]['name']) ? $old_states[$old_sid]['name'] : 'none',
+      'old_state' => !empty($old_states[$old_sid]['state']) ? $old_states[$old_sid]['state'] : t('N/A'),
+    );
+
+    db_insert('migrate_workflow_state_mappings')
+    ->fields($entry)
+    ->execute();
+  }
+}
+
 function migrate_odp_update_workflow_fields($state_mappings, $execute = FALSE){
   $fields = array(
     'field_data_field_identify_state',
@@ -261,6 +277,8 @@ function migrate_odp_fix_workflows($execute = FALSE){
   $all_new_states = migrate_odp_get_states($new_workflows);
   $legacy_workflows = migrate_odp_get_legacy_workflows($old_workflows, $new_workflows);
   $node_mappings = migrate_odp_get_node_mappings();
+  // Insert state mappings for historical lookup table
+  migrate_odp_insert_state_mappings($state_mappings, $all_old_states, $all_new_states);
 
   // Go through fields and update current state values to new state values
   migrate_odp_update_workflow_fields($state_mappings, $execute);

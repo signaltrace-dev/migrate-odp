@@ -72,6 +72,40 @@ function migrate_odp_schema(){
     ),
     'primary key' => array('ID'),
   );
+
+  $schema['migrate_workflow_state_mappings'] = array(
+    'description' => 'Mappings from old SIDs to new SIDs.',
+    'fields' => array(
+      'ID' => array(
+        'description' => 'Unique ID for entry.',
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'old_sid' => array(
+        'description' => 'The original workflow state ID.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'sid' => array(
+        'description' => 'The updated workflow state ID.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'old_name' => array(
+        'description' => 'Machine name of the original workflow state.',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'old_state' => array(
+        'description' => 'Friendly name of the original workflow state.',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('ID'),
+  );
   return $schema;
 }
 
@@ -153,4 +187,40 @@ function migrate_odp_update_7201(){
   );
 
   db_create_table('migrate_workflow_legacy_history', $schema['migrate_workflow_legacy_history']);
+
+  $schema['migrate_workflow_state_mappings'] = array(
+    'description' => 'Mappings from old SIDs to new SIDs.',
+    'fields' => array(
+      'ID' => array(
+        'description' => 'Unique ID for entry.',
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'old_sid' => array(
+        'description' => 'The original workflow state ID.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'sid' => array(
+        'description' => 'The updated workflow state ID.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'old_name' => array(
+        'description' => 'Machine name of the original workflow state.',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'old_state' => array(
+        'description' => 'Friendly name of the original workflow state.',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('ID'),
+  );
+  db_create_table('migrate_workflow_state_mappings', $schema['migrate_workflow_state_mappings']);
+
 }
