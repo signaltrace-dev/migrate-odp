@@ -155,32 +155,53 @@ function migrate_odp_insert_state_mappings($state_mappings, $old_states, $new_st
 
 function migrate_odp_update_workflow_fields($state_mappings, $execute = FALSE){
   $fields = array(
-    'field_data_field_identify_state',
-    'field_data_field_metadata_state',
-    'field_data_field_data_state',
-    'field_data_field_repository_state',
-    'field_data_field_availability_state',
+    'field_identify_state',
+    'field_metadata_state',
+    'field_data_state',
+    'field_repository_state',
+    'field_availability_state',
   );
 
-  foreach($state_mappings as $old_sid => $new_sid){
-    foreach($fields as $f){
-      if($f != 'field_data_field_data_state'){
-        $column = str_replace('field_data_', '', $f) . '_value';
-      }
-      else{
-        $column = 'field_data_state_value';
-      }
+  $field_data = migrate_odp_get_field_data($fields);
+  foreach($field_data as $entry){
+    $nid = !empty($entry['entity_id']) ? $entry['entity_id'] : 0;
+    $sid = !empty($entry['value']) ? $entry['value'] : 0;
+    $table = !empty($entry['table']) ? $entry['table'] : NULL;
+    $column = !empty($entry['column']) ? $entry['column'] : NULL;
 
-      if($execute){
-        $update = db_update($f)
-        ->fields(array(
-          $column => $new_sid,
-        ))
-        ->condition($column, $old_sid, '=');
-        $result = $update->execute();
-      }
+    $updated_sid = !empty($state_mappings[$sid]) ? $state_mappings[$sid] : $sid;
+    if($execute && !empty($table) && !empty($column)){
+      $update = db_update($table)
+      ->fields(array(
+        $column => $updated_sid,
+      ))
+      ->condition($column, $sid, '=')
+      ->condition('entity_id', $nid, '=');
+      $result = $update->execute();
     }
   }
+}
+
+function migrate_odp_get_field_data($fields){
+  $entries = array();
+
+  foreach($fields as $field_name){
+    $table = 'field_data_' . $field_name;
+    $column = $field_name . '_value';
+
+    $query = db_select($table, 'f');
+    $query->addField('f', $column, 'value');
+    $query->addField('f', 'entity_id', 'entity_id');
+    $results = $query->execute();
+
+    while($row = $results->fetchAssoc()){
+      $row['table'] = $table;
+      $row['column'] = $column;
+      $entries[] = $row;
+    }
+  }
+
+  return $entries;
 }
 
 function migrate_odp_get_node_mappings(){
