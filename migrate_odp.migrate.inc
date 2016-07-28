@@ -136,6 +136,19 @@ function migrate_d2d_register_migrations() {
     ),
   );
   Migration::registerMigration('OdpParticipant', $arguments['machine_name'], $arguments);
+
+  $arguments = $common_arguments + array(
+    'description' => t('Migrate Public Outreach'),
+    'machine_name' => t('PublicOutreach'),
+    'destination_type' => 'public_outreach',
+    'source_type' => 'public_outreach',
+    'class_name' => 'OdpPublicOutreach',
+    'dependencies' => array(
+      'TaxonomyTerms_repo_theme',
+      'Profile'
+    ),
+  );
+  Migration::registerMigration('OdpPublicOutreach', $arguments['machine_name'], $arguments);
 }
 
 function migrate_odp_migrate_api(){
