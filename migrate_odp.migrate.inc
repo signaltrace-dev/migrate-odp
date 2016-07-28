@@ -149,6 +149,21 @@ function migrate_d2d_register_migrations() {
     ),
   );
   Migration::registerMigration('OdpPublicOutreach', $arguments['machine_name'], $arguments);
+
+  $arguments = $common_arguments + array(
+    'description' => t('Migrate Publications'),
+    'machine_name' => t('Publications'),
+    'destination_type' => 'publications',
+    'source_type' => 'publications',
+    'class_name' => 'OdpPublication',
+    'dependencies' => array(
+      'TaxonomyTerms_journal',
+      'TaxonomyTerms_repo_theme',
+      'Profile',
+      'Files',
+    ),
+  );
+  Migration::registerMigration('OdpPublication', $arguments['machine_name'], $arguments);
 }
 
 function migrate_odp_migrate_api(){

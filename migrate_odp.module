@@ -1,5 +1,8 @@
 <?php
 
+function migrate_odp_node_view($node){
+}
+
 function migrate_odp_menu(){
   $items = array();
 
