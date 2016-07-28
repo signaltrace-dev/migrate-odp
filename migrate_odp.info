@@ -15,3 +15,4 @@ files[] = migrations/OdpPresentation.inc
 files[] = migrations/OdpPublication.inc
 files[] = migrations/OdpPublicOutreach.inc
 files[] = migrations/OdpStudent.inc
+files[] = migrations/OdpWorkshop.inc

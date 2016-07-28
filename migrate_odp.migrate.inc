@@ -177,6 +177,18 @@ function migrate_d2d_register_migrations() {
     ),
   );
   Migration::registerMigration('OdpStudent', $arguments['machine_name'], $arguments);
+
+  $arguments = $common_arguments + array(
+    'description' => t('Migrate Workshops'),
+    'machine_name' => t('Workshops'),
+    'destination_type' => 'workshop',
+    'source_type' => 'workshop',
+    'class_name' => 'OdpWorkshop',
+    'dependencies' => array(
+      'Profile',
+    ),
+  );
+  Migration::registerMigration('OdpWorkshop', $arguments['machine_name'], $arguments);
 }
 
 function migrate_odp_migrate_api(){
