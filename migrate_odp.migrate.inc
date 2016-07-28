@@ -189,6 +189,29 @@ function migrate_d2d_register_migrations() {
     ),
   );
   Migration::registerMigration('OdpWorkshop', $arguments['machine_name'], $arguments);
+
+  $arguments = $common_arguments + array(
+    'description' => t('Migrate Datasets'),
+    'machine_name' => t('Datasets'),
+    'destination_type' => 'dataset',
+    'source_type' => 'dataset',
+    'class_name' => 'OdpDataset',
+    'dependencies' => array(
+      'TaxonomyTerms_dataset_record_types',
+      'TaxonomyTerms_task_title',
+      'Profile',
+      'TaxonomyTerms_contact_person_roles',
+      'Expeditions',
+      'TaxonomyTerms_data_type',
+      'TaxonomyTerms_dataset_theme_keywords',
+      'TaxonomyTerms_dataset_place_keywords',
+      'TaxonomyTerms_dataset_topic_category_keywords',
+      'TaxonomyTerms_location',
+      'Files',
+      'TaxonomyTerms_dataset_file_formats',
+    ),
+  );
+  Migration::registerMigration('OdpDataset', $arguments['machine_name'], $arguments);
 }
 
 function migrate_odp_migrate_api(){

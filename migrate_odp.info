@@ -6,6 +6,7 @@ package = ResearchPipe
 
 dependencies[] = migrate
 files[] = odp.inc
+files[] = migrations/OdpDataset.inc
 files[] = migrations/OdpRoles.inc
 files[] = migrations/OdpUser.inc
 files[] = migrations/OdpProfiles.inc
