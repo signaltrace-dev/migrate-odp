@@ -123,6 +123,19 @@ function migrate_d2d_register_migrations() {
     ),
   );
   Migration::registerMigration('OdpPresentation', $arguments['machine_name'], $arguments);
+
+  $arguments = $common_arguments + array(
+    'description' => t('Migrate Participants'),
+    'machine_name' => t('Participants'),
+    'destination_type' => 'participant',
+    'source_type' => 'participant',
+    'class_name' => 'OdpParticipant',
+    'dependencies' => array(
+      'TaxonomyTerms_institutional_departments',
+      'Profile'
+    ),
+  );
+  Migration::registerMigration('OdpParticipant', $arguments['machine_name'], $arguments);
 }
 
 function migrate_odp_migrate_api(){
