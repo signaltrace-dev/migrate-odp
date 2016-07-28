@@ -164,6 +164,19 @@ function migrate_d2d_register_migrations() {
     ),
   );
   Migration::registerMigration('OdpPublication', $arguments['machine_name'], $arguments);
+
+  $arguments = $common_arguments + array(
+    'description' => t('Migrate Students'),
+    'machine_name' => t('Students'),
+    'destination_type' => 'students',
+    'source_type' => 'students',
+    'class_name' => 'OdpStudent',
+    'dependencies' => array(
+      'TaxonomyTerms_institutional_departments',
+      'Profile',
+    ),
+  );
+  Migration::registerMigration('OdpStudent', $arguments['machine_name'], $arguments);
 }
 
 function migrate_odp_migrate_api(){
