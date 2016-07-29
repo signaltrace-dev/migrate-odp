@@ -29,6 +29,9 @@ class OdpPublicOutreach extends DrupalNode7Migration {
       ->defaultvalue('tid');
 
     $this->addFieldMapping('field_po_partners_in_activity', 'field_po_partners_in_activity');
+
+    $this->addFieldMapping('uid', 'uid')
+      ->sourceMigration('User');
   }
 
   public function prepareRow($row){

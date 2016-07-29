@@ -34,9 +34,8 @@ class OdpPublication extends DrupalNode7Migration {
     $this->addFieldMapping('field_date_published', 'field_date_published');
     $this->addFieldMapping('field_repo_contribution_number', 'field_ecogig_contribution_number');
 
-/*
     $this->addFieldMapping('field_dataset', 'field_dataset')
-      ->sourceMigration('Dataset');*/
+      ->sourceMigration('Datasets');
 
     $this->addFieldMapping('field_link_to_publication_and_or', 'field_link_to_publication_and_or');
     $this->addFieldMapping('field_publication_notes', 'field_publication_notes');
@@ -52,6 +51,9 @@ class OdpPublication extends DrupalNode7Migration {
      ->defaultValue('MigrateFileFid');
     $this->addFieldMapping('field_file_upload:preserve_files')
      ->defaultValue(TRUE);
+
+     $this->addFieldMapping('uid', 'uid')
+       ->sourceMigration('User');
   }
 
   public function prepareRow($row){

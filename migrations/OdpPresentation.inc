@@ -30,6 +30,9 @@ class OdpPresentation extends DrupalNode7Migration {
       ->sourceMigration('TaxonomyTerms_repo_theme');
     $this->addFieldMapping('field_data_theme:source_type')
       ->defaultvalue('tid');
+
+    $this->addFieldMapping('uid', 'uid')
+      ->sourceMigration('User');
   }
 
   public function prepareRow($row){

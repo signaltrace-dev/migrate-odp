@@ -22,6 +22,8 @@ class OdpStudent extends DrupalNode7Migration {
     $this->addFieldMapping('field_expected_yr_of_completion', 'field_expected_yr_of_completion');
     $this->addFieldMapping('field_link_to_dissertation_or_th', 'field_link_to_dissertation_or_th');
     $this->addFieldMapping('field_notes', 'field_notes');
+    $this->addFieldMapping('uid', 'uid')
+      ->sourceMigration('User');
   }
 
   public function prepareRow($row){

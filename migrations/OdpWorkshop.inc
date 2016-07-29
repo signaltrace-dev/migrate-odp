@@ -23,6 +23,8 @@ class OdpWorkshop extends DrupalNode7Migration {
     $this->addFieldMapping('field_number_of_participants', 'field_number_of_participants');
     $this->addFieldMapping('field_meeting_website', 'field_meeting_website');
     $this->addFieldMapping('field_repo_contribution_number', 'field_ecogig_contribution_number');
+    $this->addFieldMapping('uid', 'uid')
+      ->sourceMigration('User');
   }
 
   public function prepareRow($row){

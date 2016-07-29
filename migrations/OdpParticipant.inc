@@ -16,6 +16,9 @@ class OdpParticipant extends DrupalNode7Migration {
       ->sourceMigration('TaxonomyTerms_institutional_departments');
     $this->addFieldMapping('field_institutional_department:source_type')
       ->defaultvalue('tid');
+
+    $this->addFieldMapping('uid', 'uid')
+      ->sourceMigration('User');
   }
 
   public function prepareRow($row){
