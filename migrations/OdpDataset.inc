@@ -30,7 +30,7 @@ class OdpDataset extends DrupalNode7Migration {
     $this->addFieldMapping('field_dataset_stakeholders', 'field_dataset_stakeholders')
       ->sourceMigration('Profile');
 
-    $this->addFieldMapping('field_research_expedition', 'field_research_expedition')
+    $this->addFieldMapping('field_research_expedition', 'field_blog_title')
       ->sourceMigration('Expeditions');
     $this->addFieldMapping('field_research_expedition:source_type')
       ->defaultvalue('tid');
@@ -120,6 +120,10 @@ class OdpDataset extends DrupalNode7Migration {
     $this->addFieldMapping('field_time_period_description_li', 'field_time_period_description_li');
     $this->addFieldMapping('field_date_range', 'field_date_range');
     $this->addFieldMapping('field_time_period_desc_text', 'field_time_period_desc_text');
+
+    $this->addFieldMapping('uid', 'uid')
+      ->sourceMigration('User');
+
   }
 
   public function prepareRow($row){
@@ -129,5 +133,12 @@ class OdpDataset extends DrupalNode7Migration {
       'from' => (string) $row->field_date_range[0],
       'to' => (string) $row->{'field_date_range:value2'}[0],
    ));
+  }
+
+  public function postImport(){
+    migrate_odp_fix_workflows(TRUE);
+    migrate_odp_delete_stubs();
+    migrate_odp_disable_comments();
+    cache_clear_all();
   }
 }
