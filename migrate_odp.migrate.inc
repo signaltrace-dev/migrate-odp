@@ -47,6 +47,19 @@ function migrate_d2d_register_migrations() {
 
   Migration::registerMigration('OdpUser', $arguments['machine_name'], $arguments);
 
+  $arguments = $common_arguments + array(
+    'description' => t('Migration of Quarterly Report No Activity records from old site to new site'),
+    'machine_name' => 'NoActivity',
+    'destination_type' => 'quarterly_report_no_activity_rec',
+    'source_type' => 'quarterly_report_no_activity_rec',
+    'class_name' => 'OdpNoActivity',
+    'dependencies' => array(
+      'User',
+    ),
+  );
+
+  Migration::registerMigration('OdpNoActivity', $arguments['machine_name'], $arguments);
+
    // File migration
   $arguments = $common_arguments + array(
      'description' => t('Migrate all files'),
