@@ -1028,3 +1028,48 @@ entity_get_controller('file')->resetCache(array($file->fid));
 
 return $file;
 }
+
+function migrate_odp_build_experience_title($exp_type, $dept, $start_date = NULL, $end_date = NULL){
+  $title = '';
+  $position = taxonomy_term_load($exp_type);
+  $position_name = !empty($position->name) ? $position->name : '';
+
+  $dept = taxonomy_term_load($dept);
+  $dept_name = !empty($dept->name) ? $dept->name : '';
+
+  $parents = !empty($dept->tid) ? taxonomy_get_parents($dept->tid) : array();
+  $institution = !empty($parents) ? taxonomy_term_load(current($parents)->tid) : NULL;
+  $institution_name = !empty($institution->name) ? $institution->name : '';
+
+  $title = !empty($position_name) ? $position_name : $title;
+  if(!empty($institution_name)){
+    $title .= ' at ' . $institution_name;
+    if(!empty($dept_name)){
+      $title .= ', ' . $dept_name;
+    }
+  }
+
+  if(!empty($start_date)){
+    try{
+      $date_from = new DateTime($start_date);
+      $date_to = !empty($end_date) ? new DateTime($end_date) : NULL;
+    }
+    catch(Exception $ex){
+
+    }
+
+    if($date_from instanceof DateTime){
+      $str_date_from = $date_from->format('F Y');
+    }
+    if($date_to instanceof DateTime && $start_date != $end_date){
+      $str_date_to = $date_to->format('F Y');
+    }
+
+    $str_date_to = !empty($str_date_to) ? $str_date_to : t('Present');
+
+    $title .= ' (' . $str_date_from . ' - ' . $str_date_to . ')';
+  }
+
+  return $title;
+
+}

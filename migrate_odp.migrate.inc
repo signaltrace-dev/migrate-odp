@@ -14,12 +14,12 @@ function migrate_d2d_register_migrations() {
   $common_arguments = array(
     'source_connection' => 'odp',
     'source_version' => 7,
-    'group_name' => 'odp',
   );
 
   $arguments = $common_arguments + array(
     'description' => t('Migration of roles from old site to new site'),
     'machine_name' => 'Role',
+    'group_name' => 'odp_core',
     'role_mappings' => array(
       'Administration' => 'Administration',
       'Data Manager' => 'Data Manager',
@@ -38,6 +38,7 @@ function migrate_d2d_register_migrations() {
   $arguments = $common_arguments + array(
     'description' => t('Migration of users from old site to new site'),
     'machine_name' => 'User',
+    'group_name' => 'odp_core',
     'role_migration' => 'Role',
     'class_name' => 'OdpUser',
     'dependencies' => array(
@@ -50,6 +51,7 @@ function migrate_d2d_register_migrations() {
   $arguments = $common_arguments + array(
     'description' => t('Migration of Quarterly Report No Activity records from old site to new site'),
     'machine_name' => 'NoActivity',
+    'group_name' => 'odp_content',
     'destination_type' => 'quarterly_report_no_activity_rec',
     'source_type' => 'quarterly_report_no_activity_rec',
     'class_name' => 'OdpNoActivity',
@@ -64,6 +66,7 @@ function migrate_d2d_register_migrations() {
   $arguments = $common_arguments + array(
      'description' => t('Migrate all files'),
      'machine_name' => 'Files',
+     'group_name' => 'odp_core',
      'source_dir' => 'http://ecogig.local/sites/default/files',
      'destination_dir' => '',
      'class_name' => 'OdpFile',
@@ -75,6 +78,7 @@ function migrate_d2d_register_migrations() {
   $arguments = $common_arguments + array(
      'description' => t('Migrate Profiles'),
      'machine_name' => 'Profile',
+     'group_name' => 'odp_core',
      'destination_type' => 'profile',
      'source_type' => 'profile',
      'dependencies' => array(
@@ -104,6 +108,7 @@ function migrate_d2d_register_migrations() {
 
   foreach($vocabs as $source_vocab => $dest_vocab){
     $arguments = $common_arguments + array(
+       'group_name' => 'odp_core',
        'description' => t('Migrate ' . $source_vocab),
        'machine_name' => 'TaxonomyTerms_' . $dest_vocab,
        'source_vocabulary' => $source_vocab,
@@ -116,6 +121,7 @@ function migrate_d2d_register_migrations() {
   $arguments = $common_arguments + array(
     'description' => t('Migrate Expeditions'),
     'machine_name' => t('Expeditions'),
+    'group_name' => 'odp_content',
     'source_vocabulary' => 'blog_title',
     'destination_vocabulary' => 'expedition',
     'class_name' => 'OdpExpedition',
@@ -130,6 +136,7 @@ function migrate_d2d_register_migrations() {
   $arguments = $common_arguments + array(
     'description' => t('Migrate Presentations'),
     'machine_name' => t('Presentations'),
+    'group_name' => 'odp_content',
     'destination_type' => 'presentation',
     'source_type' => 'presentation',
     'class_name' => 'OdpPresentation',
@@ -143,6 +150,7 @@ function migrate_d2d_register_migrations() {
   $arguments = $common_arguments + array(
     'description' => t('Migrate Participants'),
     'machine_name' => t('Participants'),
+    'group_name' => 'odp_content',
     'destination_type' => 'participant',
     'source_type' => 'participant',
     'class_name' => 'OdpParticipant',
@@ -156,6 +164,7 @@ function migrate_d2d_register_migrations() {
   $arguments = $common_arguments + array(
     'description' => t('Migrate Public Outreach'),
     'machine_name' => t('PublicOutreach'),
+    'group_name' => 'odp_content',
     'destination_type' => 'public_outreach',
     'source_type' => 'public_outreach',
     'class_name' => 'OdpPublicOutreach',
@@ -169,6 +178,7 @@ function migrate_d2d_register_migrations() {
   $arguments = $common_arguments + array(
     'description' => t('Migrate Publications'),
     'machine_name' => t('Publications'),
+    'group_name' => 'odp_content',
     'destination_type' => 'publications',
     'source_type' => 'publications',
     'class_name' => 'OdpPublication',
@@ -185,6 +195,7 @@ function migrate_d2d_register_migrations() {
   $arguments = $common_arguments + array(
     'description' => t('Migrate Students'),
     'machine_name' => t('Students'),
+    'group_name' => 'odp_content',
     'destination_type' => 'students',
     'source_type' => 'students',
     'class_name' => 'OdpStudent',
@@ -196,8 +207,39 @@ function migrate_d2d_register_migrations() {
   Migration::registerMigration('OdpStudent', $arguments['machine_name'], $arguments);
 
   $arguments = $common_arguments + array(
+    'description' => t('Migrate Education'),
+    'machine_name' => t('Education'),
+    'group_name' => 'odp_content',
+    'destination_type' => 'affiliation_school',
+    'source_type' => 'students',
+    'class_name' => 'OdpEducation',
+    'dependencies' => array(
+      'TaxonomyTerms_institutional_departments',
+      'TaxonomyTerms_student_types',
+      'Profile',
+    ),
+  );
+  Migration::registerMigration('OdpEducation', $arguments['machine_name'], $arguments);
+
+  $arguments = $common_arguments + array(
+    'description' => t('Migrate Work'),
+    'machine_name' => t('Work'),
+    'group_name' => 'odp_content',
+    'destination_type' => 'affiliation_work',
+    'source_type' => 'participant',
+    'class_name' => 'OdpWork',
+    'dependencies' => array(
+      'TaxonomyTerms_institutional_departments',
+      'TaxonomyTerms_participant_roles',
+      'Profile',
+    ),
+  );
+  Migration::registerMigration('OdpWork', $arguments['machine_name'], $arguments);
+
+  $arguments = $common_arguments + array(
     'description' => t('Migrate Workshops'),
     'machine_name' => t('Workshops'),
+    'group_name' => 'odp_content',
     'destination_type' => 'workshop',
     'source_type' => 'workshop',
     'class_name' => 'OdpWorkshop',
@@ -210,6 +252,7 @@ function migrate_d2d_register_migrations() {
   $arguments = $common_arguments + array(
     'description' => t('Migrate Datasets'),
     'machine_name' => t('Datasets'),
+    'group_name' => 'odp_content',
     'destination_type' => 'dataset',
     'source_type' => 'dataset',
     'class_name' => 'OdpDataset',
@@ -241,8 +284,11 @@ function migrate_odp_migrate_api(){
   $api = array(
     'api' => 2,
     'groups' => array(
-      'odp' => array(
-        'title' => t('ODP Migrations'),
+      'odp_core' => array(
+        'title' => t('Core Migrations'),
+      ),
+      'odp_content' => array(
+        'title' => t('Content Migrations'),
       ),
     ),
 
