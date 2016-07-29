@@ -53,9 +53,10 @@ function migrate_d2d_register_migrations() {
      'machine_name' => 'Files',
      'source_dir' => 'http://ecogig.local/sites/default/files',
      'destination_dir' => '',
+     'class_name' => 'OdpFile',
   );
 
-  Migration::registerMigration('DrupalFile7Migration', $arguments['machine_name'], $arguments);
+  Migration::registerMigration('OdpFile', $arguments['machine_name'], $arguments);
 
    // Profile migration
   $arguments = $common_arguments + array(
@@ -84,6 +85,8 @@ function migrate_d2d_register_migrations() {
     'gomri_theme' => 'repo_theme',
     'journal' => 'journal',
     'location' => 'location',
+    'participant_roles' => 'participant_roles',
+    'student_types' => 'student_types',
   );
 
   foreach($vocabs as $source_vocab => $dest_vocab){
@@ -161,6 +164,7 @@ function migrate_d2d_register_migrations() {
       'TaxonomyTerms_repo_theme',
       'Profile',
       'Files',
+      'Datasets',
     ),
   );
   Migration::registerMigration('OdpPublication', $arguments['machine_name'], $arguments);

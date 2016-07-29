@@ -82,7 +82,7 @@ function migrate_odp_fix_files(){
     ->fields($file)
     ->execute();
 
-    db_update('migrate_map_ecogigfile')
+    db_update('migrate_map_files')
       ->fields(array(
         'destid1' => $new_fid,
       ))
@@ -478,7 +478,7 @@ function migrate_odp_get_field_data($fields){
 
 function migrate_odp_get_node_mappings(){
   $nodes = array();
-  $query = db_select('migrate_map_ecogignodedataset', 'n');
+  $query = db_select('migrate_map_datasets', 'n');
   $query->fields('n', array('sourceid1', 'destid1'));
 
   $results = $query->execute();
@@ -493,7 +493,7 @@ function migrate_odp_get_node_mappings(){
 
 function migrate_odp_get_user_mappings(){
   $users = array();
-  $query = db_select('migrate_map_ecogiguser', 'u');
+  $query = db_select('migrate_map_user', 'u');
   $query->fields('u', array('sourceid1', 'destid1'));
 
   $results = $query->execute();
@@ -855,46 +855,44 @@ function migrate_odp_get_mappings($type){
   switch($type){
     case 'file':
       $tables = array(
-        'migrate_map_ecogigfile',
+        'migrate_map_files',
       );
     break;
     case 'taxonomy_term_reference':
       $tables = array(
-        'migrate_map_ecogigtermblog_title',
-        'migrate_map_ecogigtermcontact_person_roles',
-        'migrate_map_ecogigtermdata_type',
-        'migrate_map_ecogigtermdataset_file_formats',
-        'migrate_map_ecogigtermdataset_place_keywords',
-        'migrate_map_ecogigtermdataset_record_types',
-        'migrate_map_ecogigtermdataset_theme_keywords',
-        'migrate_map_ecogigtermdataset_topic_category_keywords',
-        'migrate_map_ecogigtermgomri_theme',
-        'migrate_map_ecogigterminstitutional_departments',
-        'migrate_map_ecogigtermjournal',
-        'migrate_map_ecogigtermlocation',
-        'migrate_map_ecogigtermparticipant_roles',
-        'migrate_map_ecogigtermpersonnel',
-        'migrate_map_ecogigtermstudent_types',
-        'migrate_map_ecogigtermtags',
-        'migrate_map_ecogigtermtask_title',
+        'migrate_map_expeditions',
+        'migrate_map_taxonomyterms_contact_person_roles',
+        'migrate_map_taxonomyterms_data_type',
+        'migrate_map_taxonomyterms_dataset_file_formats',
+        'migrate_map_taxonomyterms_dataset_place_keywords',
+        'migrate_map_taxonomyterms_dataset_record_types',
+        'migrate_map_taxonomyterms_dataset_theme_keywords',
+        'migrate_map_taxonomyterms_dataset_topic_category_keywords',
+        'migrate_map_taxonomyterms_repo_theme',
+        'migrate_map_taxonomyterms_institutional_departments',
+        'migrate_map_taxonomyterms_journal',
+        'migrate_map_taxonomyterms_location',
+        'migrate_map_taxonomyterms_participant_roles',
+        'migrate_map_taxonomyterms_student_types',
+        'migrate_map_taxonomyterms_task_title',
       );
     break;
     case 'entityreference':
       $tables = array(
-        'migrate_map_ecogignodedataset',
-        'migrate_map_ecogignodeparticipant',
-        'migrate_map_ecogignodepresentation',
-        'migrate_map_ecogignodeprofile',
-        'migrate_map_ecogignodepublic_outreach',
-        'migrate_map_ecogignodepublications',
-        'migrate_map_ecogignodequarterly_report_no_activity_rec',
-        'migrate_map_ecogignodestudents',
-        'migrate_map_ecogignodeworkshop',
+        'migrate_map_datasets',
+        'migrate_map_participants',
+        'migrate_map_presentations',
+        'migrate_map_profile',
+        'migrate_map_publicoutreach',
+        'migrate_map_publications',
+        //'migrate_map_quarterly_report_no_activity_rec',
+        'migrate_map_students',
+        'migrate_map_workshops',
       );
     break;
     case 'user':
       $tables = array(
-        'migrate_map_ecogiguser',
+        'migrate_map_user',
       );
     break;
   }
@@ -916,7 +914,7 @@ function migrate_odp_get_mappings($type){
 function migrate_odp_get_null_files(){
   $files = array();
   $fids = array();
-  $query = db_select('migrate_map_ecogigfile', 't');
+  $query = db_select('migrate_map_files', 't');
   $query
     ->fields('t')
     ->isNull('destid1');
@@ -998,4 +996,35 @@ function migrate_odp_set_current_revision(){
       }
     }
   }
+}
+
+function migrate_odp_file_save_custom(stdClass $file) {
+
+// Load the stored entity, if any.
+if (!empty($file->fid) && !isset($file->original)) {
+  $file->original = entity_load_unchanged('file', $file->fid);
+}
+
+module_invoke_all('file_presave', $file);
+module_invoke_all('entity_presave', $file, 'file');
+
+if (empty($file->fid)) {
+  drupal_write_record('file_managed', $file);
+  // Inform modules about the newly added file.
+  module_invoke_all('file_insert', $file);
+  module_invoke_all('entity_insert', $file, 'file');
+}
+else {
+  drupal_write_record('file_managed', $file, 'fid');
+  // Inform modules that the file has been updated.
+  module_invoke_all('file_update', $file);
+  module_invoke_all('entity_update', $file, 'file');
+}
+
+// Clear internal properties.
+unset($file->original);
+// Clear the static loading cache.
+entity_get_controller('file')->resetCache(array($file->fid));
+
+return $file;
 }
