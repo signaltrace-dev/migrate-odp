@@ -36,25 +36,7 @@ class OdpEducation extends DrupalNode7Migration {
     $row->student_type_tid = !empty($row->{'field_student_type:tid'}[0]) ? $row->{'field_student_type:tid'}[0] : NULL;
     $start_date = !empty($row->{'field_student_type:date_from_timestamp'}[0]) ? $row->{'field_student_type:date_from_timestamp'}[0] : NULL;
     $end_date = !empty($row->{'field_student_type:date_to_timestamp'}[0]) ? $row->{'field_student_type:date_to_timestamp'}[0] : NULL;
-/*
-    $date_from = NULL;
-    $date_to = NULL;
 
-    try{
-      $date_from = new DateTime($start_date);
-      $date_to = !empty($end_date) ? new DateTime($end_date) : NULL;
-    }
-    catch(Exception $ex){
-
-    }
-dpm(array($date_from, $date_to));
-    if($date_from instanceof DateTime){
-      $str_date_from = $date_from->format('F Y');
-    }
-    if($date_to instanceof DateTime){
-      $str_date_to = $date_to->format('F Y');
-    }
-*/
     $row->date_range = drupal_json_encode(
     array(
       'from' => (string) $start_date,
