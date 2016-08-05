@@ -6,28 +6,28 @@ function migrate_odp_node_view($node){
 function migrate_odp_menu(){
   $items = array();
 
-  $items['admin/migrate/workflows'] = array(
-    'title' => t('Migrate workflows data'),
+  $items['admin/content/migrate/workflows'] = array(
+    'title' => t('Workflows'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('migrate_odp_admin_form'),
     'access arguments' => array('administer site configuration'),
     'type' => MENU_CALLBACK,
   );
 
-  $items['admin/migrate/files'] = array(
-    'title' => t('Migrate files data'),
+  $items['admin/content/migrate/files'] = array(
+    'title' => t('Files'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('migrate_odp_admin_form_files'),
     'access arguments' => array('administer site configuration'),
     'type' => MENU_CALLBACK,
   );
 
-  $items['admin/migrate/revisions'] = array(
-    'title' => t('Migrate revisions data'),
+  $items['admin/content/migrate/revisions'] = array(
+    'title' => t('Revisions'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('migrate_odp_admin_form_revisions'),
     'access arguments' => array('administer site configuration'),
-    'type' => MENU_CALLBACK,
+    'type' => MENU_LOCAL_TASK,
   );
 
   return $items;
